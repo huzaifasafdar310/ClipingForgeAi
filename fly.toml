@@ -1,0 +1,37 @@
+# fly.toml — Fly.io deployment configuration for ClipAI Studio
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "clipai-huzaifa"
+primary_region = "sjc"
+
+[build]
+
+[env]
+  FLASK_ENV = "production"
+  FLASK_DEBUG = "0"
+  FLASK_HOST = "0.0.0.0"
+  FLASK_PORT = "8080"
+  SQLALCHEMY_DATABASE_URI = "sqlite:////data/db/yt_upl2.db"
+  WHISPER_MODEL_SIZE = "tiny"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 50
+    soft_limit = 25
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[[mounts]]
+  source = "clipai_data"
+  destination = "/data"
+  initial_size = "3gb"
