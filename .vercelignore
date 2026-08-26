@@ -1,0 +1,15 @@
+# Ignore Python backend from Vercel static build to avoid 500MB function limit
+*.py
+requirements.txt
+services/
+models.py
+app.py
+app_factory.py
+tasks.py
+seed_curated_channels.py
+curated_channels.json
+clips/
+instance/
+__pycache__/
+Dockerfile
+fly.toml
