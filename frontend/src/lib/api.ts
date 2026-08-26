@@ -23,16 +23,27 @@ export class ApiError extends Error {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-  let data: any;
-  try {
-    data = await res.json();
-  } catch (err) {
-    data = null;
+  const contentType = res.headers.get('content-type') || '';
+  let data: any = null;
+
+  if (contentType.includes('application/json')) {
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
   }
 
   if (!res.ok) {
     const errorMsg = data?.error || data?.message || `Request failed with status ${res.status}`;
     throw new ApiError(errorMsg, res.status);
+  }
+
+  if (data === null) {
+    throw new ApiError(
+      'Backend API returned non-JSON response. Please ensure your Python backend is running and VITE_API_URL is configured in your environment variables.',
+      res.status
+    );
   }
 
   return data as T;

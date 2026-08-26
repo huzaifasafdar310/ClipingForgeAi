@@ -4,7 +4,8 @@ import { api } from '@/lib/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEFAULT_CLIENT_ID = '370278236610-qa33h70cttb3732145vn86va8f03uuaa.apps.googleusercontent.com';
+const ENV_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+const DEFAULT_CLIENT_ID = ENV_CLIENT_ID || '370278236610-qa33h70cttb3732145vn86va8f03uuaa.apps.googleusercontent.com';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<GoogleUser | null>(null);
@@ -17,23 +18,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initAuth = async () => {
       // Step A: Load Client ID
-      try {
-        const backendUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-        const res = await fetch(`${backendUrl}/api/config`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.google_client_id && data.google_client_id.trim()) {
-            setClientId(data.google_client_id.trim());
+      if (ENV_CLIENT_ID) {
+        setClientId(ENV_CLIENT_ID);
+      } else {
+        try {
+          const backendUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+          const res = await fetch(`${backendUrl}/api/config`);
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            const data = await res.json();
+            if (data?.google_client_id && data.google_client_id.trim()) {
+              setClientId(data.google_client_id.trim());
+            }
           }
+        } catch (err) {
+          console.warn('Could not fetch backend config:', err);
         }
-      } catch (err) {
-        console.warn('Could not fetch backend config, using default Client ID:', err);
       }
 
       // Step B: Check Database for existing persistent session
       try {
-        const authMe = await api.getCurrentUser();
-        if (authMe.is_authenticated && authMe.user && authMe.access_token) {
+        const authMe = await api.getCurrentUser().catch(() => null);
+        if (authMe && authMe.is_authenticated && authMe.user && authMe.access_token) {
           setUser({
             accessToken: authMe.access_token,
             name: authMe.user.name || 'YouTube Creator',
