@@ -10,7 +10,8 @@ import {
   ScheduledJobRun,
 } from '@/types/api';
 
-const API_BASE = '/api';
+const BACKEND_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const API_BASE = `${BACKEND_URL}/api`;
 
 export class ApiError extends Error {
   status?: number;
@@ -261,6 +262,6 @@ export const api = {
 
   getClipStreamUrl(filePathOrName: string): string {
     const basename = filePathOrName.replace(/^local:/, '').split(/[\\/]/).pop();
-    return `/clips/${basename}`;
+    return `${BACKEND_URL}/clips/${basename}`;
   },
 };

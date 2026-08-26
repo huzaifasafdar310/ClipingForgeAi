@@ -18,7 +18,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       // Step A: Load Client ID
       try {
-        const res = await fetch('/api/config');
+        const backendUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+        const res = await fetch(`${backendUrl}/api/config`);
         if (res.ok) {
           const data = await res.json();
           if (data.google_client_id && data.google_client_id.trim()) {
