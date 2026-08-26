@@ -267,7 +267,7 @@ def get_public_config():
     # If GOOGLE_OAUTH_CLIENT_ID is unset, return empty string — the frontend
     # will show a configuration error rather than using a leaked credential.
     return jsonify({
-        'google_client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
+        'google_client_id': os.getenv('GOOGLE_OAUTH_CLIENT_ID', '').strip()
     })
 
 
